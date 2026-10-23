@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rabbi Muhammad Aman | Cybersecurity Portfolio</title>
+<meta name="description" content="Rabbi Muhammad Aman - Cybersecurity student at Seneca Polytechnic. Network security, identity and access management, web application security and security automation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05080d;
+    --panel: rgba(12, 20, 30, 0.72);
+    --border: rgba(0, 255, 157, 0.18);
+    --text: #d6e2ee;
+    --muted: #7d91a6;
+    --accent: #00ff9d;
+    --accent-2: #00b3ff;
+    --danger: #ff3c6e;
+    --mono: "JetBrains Mono", Consolas, monospace;
+    --sans: "Inter", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) { --bg: #0a0f16; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  canvas#matrix {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    z-index: -1; opacity: 0.22; pointer-events: none;
+  }
+  .container { width: min(1100px, 100% - 32px); margin: 0 auto; }
+  section { padding: 96px 0; position: relative; }
+  .label {
+    font-family: var(--mono); color: var(--accent); font-size: 14px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin: 8px 0 32px; }
+  h2 span { color: var(--accent); }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    backdrop-filter: blur(10px);
+    background: rgba(5, 8, 13, 0.7);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .container { display: flex; justify-content: space-between; align-items: center; height: 64px; }
+  .logo { font-family: var(--mono); font-weight: 700; color: var(--accent); }
+  nav ul { display: flex; gap: 24px; list-style: none; }
+  nav a { color: var(--text); font-size: 14px; font-family: var(--mono); }
+  nav a:hover { color: var(--accent); text-decoration: none; }
+  .progress {
+    position: absolute; bottom: -1px; left: 0; height: 2px; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+
+  /* Hero */
+  #hero { min-height: 100vh; display: flex; align-items: center; padding-top: 80px; }
+  .hero-name {
+    font-size: clamp(40px, 8vw, 84px); font-weight: 800; line-height: 1.05;
+    position: relative;
+  }
+  .glitch { position: relative; display: inline-block; }
+  .glitch::before, .glitch::after {
+    content: attr(data-text); position: absolute; left: 0; top: 0;
+    width: 100%; overflow: hidden;
+  }
+  .glitch::before { color: var(--danger); opacity: 0; animation: glitch1 2.4s infinite linear; clip-path: inset(0 0 60% 0); }
+  .glitch::after { color: var(--accent-2); opacity: 0; animation: glitch2 3s infinite linear; clip-path: inset(50% 0 0 0); }
+  @keyframes glitch1 {
+    0%, 89%, 100% { transform: translate(0); opacity: 0; }
+    90% { transform: translate(-5px, 1px); opacity: .8; }
+    92% { transform: translate(5px, -1px); opacity: .8; }
+    94% { opacity: 0; }
+  }
+  @keyframes glitch2 {
+    0%, 84%, 100% { transform: translate(0); opacity: 0; }
+    86% { transform: translate(5px, 2px); opacity: .8; }
+    88% { transform: translate(-4px, -1px); opacity: .8; }
+    90% { opacity: 0; }
+  }
+  .role { font-family: var(--mono); font-size: clamp(16px, 2.4vw, 22px); color: var(--accent); margin: 20px 0; min-height: 1.6em; }
+  .cursor { display: inline-block; width: 10px; background: var(--accent); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hero-sub { max-width: 620px; color: var(--muted); font-size: 18px; }
+  .btns { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 32px; }
+  .btn {
+    font-family: var(--mono); font-size: 14px; padding: 12px 22px;
+    border: 1px solid var(--accent); color: var(--accent);
+    border-radius: 4px; transition: all .25s; position: relative; overflow: hidden;
+  }
+  .btn:hover { background: var(--accent); color: #001a0e; text-decoration: none; box-shadow: 0 0 24px rgba(0,255,157,.45); }
+  .btn.solid { background: var(--accent); color: #001a0e; }
+  .btn.solid:hover { background: transparent; color: var(--accent); }
+  .status {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 28px;
+    font-family: var(--mono); font-size: 13px; color: var(--muted);
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .5; } }
+
+  /* About */
+  .about-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: start; }
+  .about-grid p { color: var(--muted); margin-bottom: 16px; }
+  .terminal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    font-family: var(--mono); font-size: 14px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  }
+  .term-bar { background: rgba(255,255,255,.04); padding: 10px 14px; display: flex; gap: 7px; }
+  .term-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .term-body { padding: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; min-height: 260px; }
+  .term-body .p { color: var(--accent); }
+  .term-body .c { color: var(--muted); }
+
+  /* Cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 26px; position: relative; overflow: hidden;
+    transition: transform .35s, border-color .35s, box-shadow .35s;
+    display: flex; flex-direction: column;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(400px circle at var(--mx,50%) var(--my,50%), rgba(0,255,157,.12), transparent 40%);
+    opacity: 0; transition: opacity .3s; pointer-events: none;
+  }
+  .card:hover::before { opacity: 1; }
+  .card:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 16px 40px rgba(0,255,157,.12); }
+  .card h3 { font-size: 20px; margin-bottom: 6px; }
+  .card .tag { font-family: var(--mono); font-size: 12px; color: var(--accent-2); margin-bottom: 12px; }
+  .card p { color: var(--muted); font-size: 15px; flex: 1; }
+  .card ul { margin: 12px 0 16px 18px; color: var(--muted); font-size: 14px; }
+  .card .links { display: flex; gap: 16px; font-family: var(--mono); font-size: 13px; margin-top: 12px; }
+  .lang { display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--bg); background: var(--accent); padding: 2px 8px; border-radius: 3px; margin-left: 8px; vertical-align: middle; }
+
+  /* Skills */
+  .skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; }
+  .skill-group { border-left: 2px solid var(--accent); padding-left: 18px; }
+  .skill-group h4 { font-family: var(--mono); margin-bottom: 12px; color: var(--accent-2); }
+  .bar { margin-bottom: 12px; font-size: 14px; }
+  .bar-top { display: flex; justify-content: space-between; color: var(--muted); font-family: var(--mono); font-size: 12px; margin-bottom: 4px; }
+  .bar-track { height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+  .bar-fill {
+    height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width 1.4s cubic-bezier(.2,.8,.2,1); border-radius: 3px;
+  }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 28px; border-left: 1px dashed var(--border); }
+  .tl-item { position: relative; margin-bottom: 36px; }
+  .tl-item::before {
+    content: ""; position: absolute; left: -35px; top: 6px; width: 13px; height: 13px;
+    background: var(--bg); border: 2px solid var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent);
+  }
+  .tl-item .when { font-family: var(--mono); font-size: 13px; color: var(--accent-2); }
+  .tl-item h4 { font-size: 18px; margin: 4px 0; }
+  .tl-item p { color: var(--muted); font-size: 15px; }
+
+  /* Contact */
+  #contact { text-align: center; }
+  #contact p { color: var(--muted); max-width: 560px; margin: 0 auto 28px; }
+  .contact-links { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+  footer { text-align: center; padding: 32px 0; color: var(--muted); font-family: var(--mono); font-size: 13px; border-top: 1px solid var(--border); }
+
+  /* Reveal */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* Mobile */
+  @media (max-width: 800px) {
+    .about-grid { grid-template-columns: 1fr; }
+    nav ul { display: none; }
+    section { padding: 72px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="matrix" aria-hidden="true"></canvas>
+
+<nav>
+  <div class="container">
+    <span class="logo">&gt; rabbi_aman_</span>
+    <ul>
+      <li><a href="#about">about</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#skills">skills</a></li>
+      <li><a href="#experience">journey</a></li>
+      <li><a href="#contact">contact</a></li>
+    </ul>
+  </div>
+  <div class="progress" id="progress"></div>
+</nav>
+
+<header id="hero">
+  <div class="container">
+    <p class="label">// cybersecurity portfolio</p>
+    <h1 class="hero-name">
+      <span class="glitch" data-text="Rabbi Muhammad Aman">Rabbi Muhammad Aman</span>
+    </h1>
+    <p class="role"><span id="typed"></span><span class="cursor">&nbsp;</span></p>
+    <p class="hero-sub">Cybersecurity student at Seneca Polytechnic (Toronto). I build and break things so they stay secure: network defense, cloud identity, web application security and AI-assisted security automation.</p>
+    <div class="btns">
+      <a class="btn solid" href="#projects">./view_projects</a>
+      <a class="btn" href="#contact">./contact_me</a>
+    </div>
+    <div class="status"><span class="dot"></span> Open to co-op / internship opportunities</div>
+  </div>
+</header>
+
+<section id="about">
+  <div class="container about-grid">
+    <div class="reveal">
+      <p class="label">01 // about</p>
+      <h2>Security mindset, <span>hands-on</span> practice</h2>
+      <p>I study cybersecurity with a focus on defending real networks and cloud identity systems. My labs are built in isolated environments, and each one comes with a written report and evidence.</p>
+      <p>I am especially interested in how large language model agents can speed up log analysis and security operations, and in doing that safely with permission gates and clear limits.</p>
+      <p>Outside of coursework I write Python, PowerShell, Bash and JavaScript, and I like automating repetitive hardening and compliance work.</p>
+    </div>
+    <div class="terminal reveal">
+      <div class="term-bar"><i style="background:#ff5f56"></i><i style="background:#ffbd2e"></i><i style="background:#27c93f"></i></div>
+      <div class="term-body" id="term"></div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="container">
+    <p class="label reveal">02 // projects</p>
+    <h2 class="reveal">Selected <span>work</span></h2>
+    <div class="grid">
+      <article class="card reveal">
+        <p class="tag">AI-ASSISTED LOG ANALYSIS</p>
+        <h3>Network Attack Analysis<span class="lang">Python</span></h3>
+        <p>A hand-built Python tool-calling agent with permission gates for security log analysis. Coordinates Claude and Gemini agents in parallel.</p>
+        <ul><li>Cut LLM token use by 76% with context management</li></ul>
+        <div class="links"><a href="https://github.com/rabbiaman03/srt521-network-attack-analysis">source →</a></div>
+      </article>
+      <article class="card reveal">
+        <p class="tag">NETWORK SECURITY</p>
+        <h3>Enterprise Network Security<span class="lang">Python</span></h3>
+        <p>Enterprise network design and hardening (group project) with threat and risk analysis.</p>
+        <ul><li>VLAN security zones, OSPF with MD5 authentication</li><li>nftables default-deny firewall, AD DS, DNS split-horizon</li><li>TVRA risk assessment and OSINT</li></ul>
+        <div class="links"><a href="https://github.com/rabbiaman03/spr500-security-project">source →</a></div>
+      </article>
+      <article class="card reveal">
+        <p class="tag">IDENTITY &amp; ACCESS MANAGEMENT</p>
+        <h3>Entra ID &amp; Azure Labs</h3>
+        <p>Identity security labs in Microsoft Entra ID and Azure.</p>
+        <ul><li>Conditional Access and MFA</li><li>B2B federation and RBAC</li><li>Key Vault, managed identities, Defender for Cloud Apps</li></ul>
+        <div class="links"><a href="https://github.com/rabbiaman03/iam500-identity-access-management">source →</a></div>
+      </article>
+      <article class="card reveal">
+        <p class="tag">WEB APPLICATION SECURITY</p>
+        <h3>Web App Security Labs<span class="lang">JavaScript</span></h3>
+        <p>Hands-on front-end security labs covering XSS and client-side validation bypass, with accessible responsive design.</p>
+        <div class="links"><a href="https://github.com/rabbiaman03/was500-web-app-security">source →</a><a href="https://rabbiaman03.github.io/was500-web-app-security/">live demo →</a></div>
+      </article>
+      <article class="card reveal">
+        <p class="tag">APPLIED CRYPTOGRAPHY</p>
+        <h3>Applied Cryptography<span class="lang">Python</span></h3>
+        <p>Cryptography experiments and demos, from classical key exchange to post-quantum signatures.</p>
+        <ul><li>Tor key exchange analysis and ECC benchmarks</li><li>RSA and Ed25519 in Python</li><li>Interactive Schnorr zero-knowledge proof, SPHINCS+ signatures</li></ul>
+        <div class="links"><a href="https://github.com/rabbiaman03/spr200-applied-cryptography">source →</a></div>
+      </article>
+      <article class="card reveal">
+        <p class="tag">DEFENSIVE SECURITY</p>
+        <h3>Cyber Defense Labs<span class="lang">Journals</span></h3>
+        <p>Defensive security labs and learning journals on attacks, kill chains and Zero Trust.</p>
+        <ul><li>OpenVAS vulnerability scanning</li><li>PCAP analysis with tcpdump and Wireshark</li><li>BloodHound AD attack paths</li></ul>
+        <div class="links"><a href="https://github.com/rabbiaman03/cyber-defense-labs-journals">source →</a></div>
+      </article>
+      <article class="card reveal">
+        <p class="tag">SECURITY AUTOMATION</p>
+        <h3>Windows CIS Hardening<span class="lang">Ansible</span></h3>
+        <p>An Ansible role that enforces CIS Benchmark controls on Windows over WinRM, with an HTML compliance report.</p>
+        <div class="links"><a href="https://github.com/rabbiaman03/windows-cis-hardening-ansible">source →</a></div>
+      </article>
+      <article class="card reveal">
+        <p class="tag">DATA SECURITY</p>
+        <h3>Databases, Security &amp; Analytics<span class="lang">Python</span></h3>
+        <p>Database security and analytics work across SQL, NoSQL and logging stacks.</p>
+        <ul><li>MySQL backup and binlog point-in-time recovery</li><li>MongoDB, ELK centralized logging, spaCy NLP</li></ul>
+        <div class="links"><a href="https://github.com/rabbiaman03/ris330-database-security-analytics">source →</a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="container">
+    <p class="label reveal">03 // skills</p>
+    <h2 class="reveal">Tech <span>stack</span></h2>
+    <div class="skills">
+      <div class="skill-group reveal">
+        <h4>// security</h4>
+        <div class="bar" data-level="85"><div class="bar-top"><span>Network security</span><span>85%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="80"><div class="bar-top"><span>Identity &amp; access (Entra ID)</span><span>80%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="75"><div class="bar-top"><span>Web app security</span><span>75%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="70"><div class="bar-top"><span>Vulnerability assessment</span><span>70%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+      </div>
+      <div class="skill-group reveal">
+        <h4>// tools</h4>
+        <div class="bar" data-level="80"><div class="bar-top"><span>Wireshark / tcpdump</span><span>80%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="75"><div class="bar-top"><span>nftables / firewalls</span><span>75%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="70"><div class="bar-top"><span>Ansible / WinRM</span><span>70%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="70"><div class="bar-top"><span>Linux / Windows Server</span><span>70%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+      </div>
+      <div class="skill-group reveal">
+        <h4>// code</h4>
+        <div class="bar" data-level="80"><div class="bar-top"><span>Python</span><span>80%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="70"><div class="bar-top"><span>PowerShell / Bash</span><span>70%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="65"><div class="bar-top"><span>JavaScript / HTML / CSS</span><span>65%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+        <div class="bar" data-level="60"><div class="bar-top"><span>SQL / MongoDB</span><span>60%</span></div><div class="bar-track"><div class="bar-fill"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="container">
+    <p class="label reveal">04 // journey</p>
+    <h2 class="reveal">Education &amp; <span>growth</span></h2>
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <p class="when">2024 - PRESENT</p>
+        <h4>Cybersecurity Student, Seneca Polytechnic</h4>
+        <p>Toronto, Canada. Coursework across network security, identity and access management, web application security, applied cryptography, database security and threat analysis.</p>
+      </div>
+      <div class="tl-item reveal">
+        <p class="when">RECENT WORK</p>
+        <h4>Security Labs &amp; Projects</h4>
+        <p>Built a log-analysis agent, hardened Windows with Ansible, designed a segmented enterprise network with nftables and OSPF, and mapped Azure identity controls with Conditional Access and MFA.</p>
+      </div>
+      <div class="tl-item reveal">
+        <p class="when">NEXT</p>
+        <h4>Seeking co-op / internship</h4>
+        <p>Looking for opportunities in cybersecurity, network security and cloud security.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container reveal">
+    <p class="label">05 // contact</p>
+    <h2>Let's <span>connect</span></h2>
+    <p>Open to co-op and internship roles in cybersecurity. Reach out and I will reply as soon as I can.</p>
+    <div class="contact-links">
+      <a class="btn solid" href="mailto:rabbiaman03@gmail.com">./email_me</a>
+      <a class="btn" href="https://www.linkedin.com/in/rabbi-muhammad-aman-9136092a9" target="_blank" rel="noopener">./linkedin</a>
+      <a class="btn" href="https://github.com/rabbiaman03" target="_blank" rel="noopener">./github</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">© <span id="year"></span> Rabbi Muhammad Aman · built with zero frameworks</div>
+</footer>
+
+<script>
+(() => {
+  // Matrix rain background
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  const chars = '01<>{}[]$#@%&ABCDEF';
+  let cols, drops;
+  const size = () => {
+    canvas.width = innerWidth; canvas.height = innerHeight;
+    cols = Math.floor(canvas.width / 16);
+    drops = Array.from({ length: cols }, () => Math.random() * -50);
+  };
+  size();
+  addEventListener('resize', size);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const drawMatrix = () => {
+    ctx.fillStyle = 'rgba(5,8,13,0.12)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff9d';
+    ctx.font = '14px JetBrains Mono, monospace';
+    for (let i = 0; i < cols; i++) {
+      const ch = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(ch, i * 16, drops[i] * 16);
+      if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+    requestAnimationFrame(drawMatrix);
+  };
+  if (!reduce) drawMatrix();
+
+  // Typing effect
+  const phrases = ['Network Security Student', 'Identity & Cloud Defender', 'Web App Security Learner', 'Security Automation Builder'];
+  const typed = document.getElementById('typed');
+  let p = 0, c = 0, deleting = false;
+  const type = () => {
+    const word = phrases[p];
+    typed.textContent = deleting ? word.slice(0, c--) : word.slice(0, c++);
+    let delay = deleting ? 40 : 90;
+    if (!deleting && c > word.length) { deleting = true; delay = 1400; }
+    else if (deleting && c < 0) { deleting = false; p = (p + 1) % phrases.length; c = 0; delay = 300; }
+    setTimeout(type, delay);
+  };
+  type();
+
+  // Terminal about-me animation
+  const lines = [
+    ['p', '$ whoami'], ['', 'rabbi-muhammad-aman'],
+    ['p', '$ cat focus.txt'], ['', 'network defense | cloud identity | appsec'],
+    ['p', '$ ./status --check'], ['c', '[ OK ] labs documented with evidence'],
+    ['c', '[ OK ] open to co-op / internship'],
+    ['p', '$ _']
+  ];
+  const term = document.getElementById('term');
+  const termObs = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting) return;
+    termObs.disconnect();
+    let i = 0;
+    const next = () => {
+      if (i >= lines.length) return;
+      const [cls, text] = lines[i++];
+      const row = document.createElement('div');
+      if (cls) row.className = cls;
+      term.appendChild(row);
+      let k = 0;
+      const step = () => {
+        row.textContent = text.slice(0, k++);
+        if (k <= text.length) setTimeout(step, 22);
+        else setTimeout(next, 220);
+      };
+      step();
+    };
+    next();
+  }, { threshold: 0.4 });
+  termObs.observe(term);
+
+  // Reveal on scroll + skill bars
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      en.target.classList.add('in');
+      en.target.querySelectorAll('.bar-fill').forEach(f => {
+        f.style.width = f.closest('.bar').dataset.level + '%';
+      });
+      revealObs.unobserve(en.target);
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // Scroll progress bar
+  const bar = document.getElementById('progress');
+  addEventListener('scroll', () => {
+    const h = document.documentElement;
+    bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 + '%';
+  }, { passive: true });
+
+  // Cursor-follow glow on cards
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  // In-page links (nav, buttons): scroll in JS so they work even where hash navigation is blocked
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const id = link.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+    });
+  });
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
