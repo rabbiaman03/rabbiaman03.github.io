@@ -179,6 +179,59 @@
   .reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s ease, transform .8s ease; }
   .reveal.in { opacity: 1; transform: none; }
 
+  /* Loader (idea from Daniel Spatzek / Minh Pham: percent counter intro) */
+  #loader {
+    position: fixed; inset: 0; z-index: 100; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: clamp(48px, 10vw, 120px); color: var(--accent);
+    transition: opacity .6s ease, visibility .6s;
+  }
+  #loader.done { opacity: 0; visibility: hidden; }
+
+  /* Custom cursor glow */
+  #cursor {
+    position: fixed; width: 320px; height: 320px; margin: -160px 0 0 -160px;
+    border-radius: 50%; pointer-events: none; z-index: -1;
+    background: radial-gradient(circle, rgba(0,179,255,.13), transparent 60%);
+    transition: transform .15s ease-out;
+  }
+
+  /* Active nav link (idea from Brittany Chiang's sticky nav) */
+  nav a.active { color: var(--accent); }
+  nav a.active::after { content: " _"; color: var(--accent); }
+
+  /* Marquee ticker (idea from Daniel Spatzek's trendy marquee) */
+  .marquee {
+    overflow: hidden; white-space: nowrap; border-block: 1px solid var(--border);
+    padding: 16px 0; font-family: var(--mono); color: var(--muted); font-size: 15px;
+  }
+  .marquee-track { display: inline-block; animation: marquee 28s linear infinite; }
+  .marquee-track span { margin-right: 36px; }
+  .marquee-track span b { color: var(--accent); font-weight: 700; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Filter chips (idea from Daniel Spatzek's project tags) */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; background: none; color: var(--text);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px; cursor: pointer;
+    transition: all .2s;
+  }
+  .chip:hover, .chip.on { border-color: var(--accent); color: var(--accent); }
+  .card.hide { display: none; }
+
+  /* Process steps (idea from Daniel Spatzek's process section) */
+  .process { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; counter-reset: step; }
+  .step {
+    border-top: 2px solid var(--accent); padding-top: 16px;
+    counter-increment: step;
+  }
+  .step::before {
+    content: "0" counter(step); font-family: var(--mono); color: var(--accent-2); font-size: 13px; display: block; margin-bottom: 6px;
+  }
+  .step h4 { font-size: 18px; margin-bottom: 6px; }
+  .step p { color: var(--muted); font-size: 14px; }
+
   /* Mobile */
   @media (max-width: 800px) {
     .about-grid { grid-template-columns: 1fr; }
@@ -192,6 +245,8 @@
 </style>
 </head>
 <body>
+<div id="loader" aria-hidden="true"><span id="loader-num">000</span></div>
+<div id="cursor" aria-hidden="true"></div>
 <canvas id="matrix" aria-hidden="true"></canvas>
 
 <nav>
@@ -200,6 +255,7 @@
     <ul>
       <li><a href="#about">about</a></li>
       <li><a href="#projects">projects</a></li>
+      <li><a href="#process">process</a></li>
       <li><a href="#skills">skills</a></li>
       <li><a href="#experience">journey</a></li>
       <li><a href="#contact">contact</a></li>
@@ -224,6 +280,13 @@
   </div>
 </header>
 
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span><b>NETWORK DEFENSE</b> ///</span><span><b>IDENTITY &amp; ACCESS</b> ///</span><span><b>WEB APP SECURITY</b> ///</span><span><b>APPLIED CRYPTO</b> ///</span><span><b>SECURITY AUTOMATION</b> ///</span><span><b>THREAT ANALYSIS</b> ///</span>
+    <span><b>NETWORK DEFENSE</b> ///</span><span><b>IDENTITY &amp; ACCESS</b> ///</span><span><b>WEB APP SECURITY</b> ///</span><span><b>APPLIED CRYPTO</b> ///</span><span><b>SECURITY AUTOMATION</b> ///</span><span><b>THREAT ANALYSIS</b> ///</span>
+  </div>
+</div>
+
 <section id="about">
   <div class="container about-grid">
     <div class="reveal">
@@ -244,55 +307,63 @@
   <div class="container">
     <p class="label reveal">02 // projects</p>
     <h2 class="reveal">Selected <span>work</span></h2>
+    <div class="filters reveal" role="group" aria-label="Filter projects">
+      <button class="chip on" data-filter="all">all</button>
+      <button class="chip" data-filter="network">network</button>
+      <button class="chip" data-filter="identity">identity</button>
+      <button class="chip" data-filter="appsec">appsec</button>
+      <button class="chip" data-filter="crypto">crypto</button>
+      <button class="chip" data-filter="automation">automation</button>
+    </div>
     <div class="grid">
-      <article class="card reveal">
+      <article class="card reveal" data-cat="network automation">
         <p class="tag">AI-ASSISTED LOG ANALYSIS</p>
         <h3>Network Attack Analysis<span class="lang">Python</span></h3>
         <p>A hand-built Python tool-calling agent with permission gates for security log analysis. Coordinates Claude and Gemini agents in parallel.</p>
         <ul><li>Cut LLM token use by 76% with context management</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/srt521-network-attack-analysis">source →</a></div>
       </article>
-      <article class="card reveal">
+      <article class="card reveal" data-cat="network">
         <p class="tag">NETWORK SECURITY</p>
         <h3>Enterprise Network Security<span class="lang">Python</span></h3>
         <p>Enterprise network design and hardening (group project) with threat and risk analysis.</p>
         <ul><li>VLAN security zones, OSPF with MD5 authentication</li><li>nftables default-deny firewall, AD DS, DNS split-horizon</li><li>TVRA risk assessment and OSINT</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/spr500-security-project">source →</a></div>
       </article>
-      <article class="card reveal">
+      <article class="card reveal" data-cat="identity">
         <p class="tag">IDENTITY &amp; ACCESS MANAGEMENT</p>
         <h3>Entra ID &amp; Azure Labs</h3>
         <p>Identity security labs in Microsoft Entra ID and Azure.</p>
         <ul><li>Conditional Access and MFA</li><li>B2B federation and RBAC</li><li>Key Vault, managed identities, Defender for Cloud Apps</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/iam500-identity-access-management">source →</a></div>
       </article>
-      <article class="card reveal">
+      <article class="card reveal" data-cat="appsec">
         <p class="tag">WEB APPLICATION SECURITY</p>
         <h3>Web App Security Labs<span class="lang">JavaScript</span></h3>
         <p>Hands-on front-end security labs covering XSS and client-side validation bypass, with accessible responsive design.</p>
         <div class="links"><a href="https://github.com/rabbiaman03/was500-web-app-security">source →</a><a href="https://rabbiaman03.github.io/was500-web-app-security/">live demo →</a></div>
       </article>
-      <article class="card reveal">
+      <article class="card reveal" data-cat="crypto">
         <p class="tag">APPLIED CRYPTOGRAPHY</p>
         <h3>Applied Cryptography<span class="lang">Python</span></h3>
         <p>Cryptography experiments and demos, from classical key exchange to post-quantum signatures.</p>
         <ul><li>Tor key exchange analysis and ECC benchmarks</li><li>RSA and Ed25519 in Python</li><li>Interactive Schnorr zero-knowledge proof, SPHINCS+ signatures</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/spr200-applied-cryptography">source →</a></div>
       </article>
-      <article class="card reveal">
+      <article class="card reveal" data-cat="network">
         <p class="tag">DEFENSIVE SECURITY</p>
         <h3>Cyber Defense Labs<span class="lang">Journals</span></h3>
         <p>Defensive security labs and learning journals on attacks, kill chains and Zero Trust.</p>
         <ul><li>OpenVAS vulnerability scanning</li><li>PCAP analysis with tcpdump and Wireshark</li><li>BloodHound AD attack paths</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/cyber-defense-labs-journals">source →</a></div>
       </article>
-      <article class="card reveal">
+      <article class="card reveal" data-cat="automation">
         <p class="tag">SECURITY AUTOMATION</p>
         <h3>Windows CIS Hardening<span class="lang">Ansible</span></h3>
         <p>An Ansible role that enforces CIS Benchmark controls on Windows over WinRM, with an HTML compliance report.</p>
         <div class="links"><a href="https://github.com/rabbiaman03/windows-cis-hardening-ansible">source →</a></div>
       </article>
-      <article class="card reveal">
+      <article class="card reveal" data-cat="appsec automation">
         <p class="tag">DATA SECURITY</p>
         <h3>Databases, Security &amp; Analytics<span class="lang">Python</span></h3>
         <p>Database security and analytics work across SQL, NoSQL and logging stacks.</p>
@@ -303,9 +374,24 @@
   </div>
 </section>
 
+<section id="process">
+  <div class="container">
+    <p class="label reveal">03 // process</p>
+    <h2 class="reveal">How I <span>approach</span> a problem</h2>
+    <div class="process">
+      <div class="step reveal"><h4>Recon</h4><p>Map assets, data flows and the attack surface before touching anything.</p></div>
+      <div class="step reveal"><h4>Analyze</h4><p>Scan, capture and review logs to find real risk, not noise.</p></div>
+      <div class="step reveal"><h4>Build</h4><p>Design controls and automation with least privilege in mind.</p></div>
+      <div class="step reveal"><h4>Test</h4><p>Validate each control in an isolated lab and confirm it works.</p></div>
+      <div class="step reveal"><h4>Harden</h4><p>Apply baselines such as CIS and enforce them repeatably.</p></div>
+      <div class="step reveal"><h4>Report</h4><p>Document findings with evidence and clear, prioritized fixes.</p></div>
+    </div>
+  </div>
+</section>
+
 <section id="skills">
   <div class="container">
-    <p class="label reveal">03 // skills</p>
+    <p class="label reveal">04 // skills</p>
     <h2 class="reveal">Tech <span>stack</span></h2>
     <div class="skills">
       <div class="skill-group reveal">
@@ -335,7 +421,7 @@
 
 <section id="experience">
   <div class="container">
-    <p class="label reveal">04 // journey</p>
+    <p class="label reveal">05 // journey</p>
     <h2 class="reveal">Education &amp; <span>growth</span></h2>
     <div class="timeline">
       <div class="tl-item reveal">
@@ -359,7 +445,7 @@
 
 <section id="contact">
   <div class="container reveal">
-    <p class="label">05 // contact</p>
+    <p class="label">06 // contact</p>
     <h2>Let's <span>connect</span></h2>
     <p>Open to co-op and internship roles in cybersecurity. Reach out and I will reply as soon as I can.</p>
     <div class="contact-links">
@@ -475,6 +561,53 @@
       const r = card.getBoundingClientRect();
       card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
       card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  // Intro loader with percent counter
+  const loader = document.getElementById('loader');
+  const loaderNum = document.getElementById('loader-num');
+  let pct = 0;
+  const loadTick = setInterval(() => {
+    pct = Math.min(100, pct + Math.ceil(Math.random() * 9));
+    loaderNum.textContent = String(pct).padStart(3, '0');
+    if (pct >= 100) {
+      clearInterval(loadTick);
+      setTimeout(() => loader.classList.add('done'), 250);
+    }
+  }, 35);
+
+  // Cursor glow follows the mouse (desktop only)
+  const cursor = document.getElementById('cursor');
+  if (matchMedia('(pointer: fine)').matches && !reduce) {
+    addEventListener('mousemove', e => {
+      cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+    }, { passive: true });
+  } else {
+    cursor.style.display = 'none';
+  }
+
+  // Active nav link while scrolling
+  const navLinks = document.querySelectorAll('nav ul a');
+  const sectionObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => sectionObs.observe(s));
+
+  // Project filter chips
+  const chips = document.querySelectorAll('.chip');
+  const cards = document.querySelectorAll('#projects .card');
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const f = chip.dataset.filter;
+      chips.forEach(c => c.classList.toggle('on', c === chip));
+      cards.forEach(card => {
+        const cats = (card.dataset.cat || '').split(' ');
+        card.classList.toggle('hide', f !== 'all' && !cats.includes(f));
+      });
     });
   });
 
