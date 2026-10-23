@@ -10,24 +10,25 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #05080d;
-    --panel: rgba(12, 20, 30, 0.72);
-    --border: rgba(0, 255, 157, 0.18);
-    --text: #d6e2ee;
-    --muted: #7d91a6;
-    --accent: #00ff9d;
-    --accent-2: #00b3ff;
-    --danger: #ff3c6e;
+    --bg: #070b16;
+    --bg-2: #0c1224;
+    --panel: rgba(16, 24, 46, 0.7);
+    --border: rgba(34, 211, 238, 0.16);
+    --text: #e2e8f5;
+    --muted: #8593b0;
+    --accent: #22d3ee;      /* cyan */
+    --accent-2: #a78bfa;    /* violet */
+    --danger: #fb7185;
+    --ink: #04121a;
     --mono: "JetBrains Mono", Consolas, monospace;
     --sans: "Inter", system-ui, sans-serif;
-  }
-  @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) { --bg: #0a0f16; }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
-    background: var(--bg);
+    background: radial-gradient(1200px 700px at 80% -10%, rgba(167,139,250,.10), transparent 60%),
+                radial-gradient(900px 600px at -10% 30%, rgba(34,211,238,.08), transparent 60%),
+                var(--bg);
     color: var(--text);
     font-family: var(--sans);
     line-height: 1.6;
@@ -35,31 +36,52 @@
   }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  canvas#matrix {
+  canvas#net {
     position: fixed; inset: 0; width: 100%; height: 100%;
-    z-index: -1; opacity: 0.22; pointer-events: none;
+    z-index: -1; pointer-events: none; opacity: .55;
   }
-  .container { width: min(1100px, 100% - 32px); margin: 0 auto; }
+  .container { width: min(1120px, 100% - 32px); margin: 0 auto; }
   section { padding: 96px 0; position: relative; }
   .label {
-    font-family: var(--mono); color: var(--accent); font-size: 14px;
-    letter-spacing: 0.1em; text-transform: uppercase;
+    font-family: var(--mono); color: var(--accent); font-size: 13px;
+    letter-spacing: .12em; text-transform: uppercase;
   }
-  h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin: 8px 0 32px; }
-  h2 span { color: var(--accent); }
+  h2 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; margin: 8px 0 32px; letter-spacing: -.01em; }
+  h2 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Loader */
+  #loader {
+    position: fixed; inset: 0; z-index: 100; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: clamp(48px, 10vw, 120px); color: var(--accent);
+    transition: opacity .6s ease, visibility .6s;
+  }
+  #loader.done { opacity: 0; visibility: hidden; }
+
+  /* Cursor glow */
+  #cursor {
+    position: fixed; left: 0; top: 0; width: 360px; height: 360px; margin: -180px 0 0 -180px;
+    border-radius: 50%; pointer-events: none; z-index: -1;
+    background: radial-gradient(circle, rgba(34,211,238,.12), transparent 60%);
+    transition: transform .2s ease-out;
+  }
 
   /* Nav */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-    backdrop-filter: blur(10px);
-    background: rgba(5, 8, 13, 0.7);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    background: rgba(7, 11, 22, .6);
     border-bottom: 1px solid var(--border);
   }
   nav .container { display: flex; justify-content: space-between; align-items: center; height: 64px; }
-  .logo { font-family: var(--mono); font-weight: 700; color: var(--accent); }
-  nav ul { display: flex; gap: 24px; list-style: none; }
-  nav a { color: var(--text); font-size: 14px; font-family: var(--mono); }
-  nav a:hover { color: var(--accent); text-decoration: none; }
+  .logo { font-family: var(--mono); font-weight: 700; color: var(--text); }
+  .logo b { color: var(--accent); font-weight: 700; }
+  nav ul { display: flex; gap: 22px; list-style: none; }
+  nav a { color: var(--muted); font-size: 14px; font-family: var(--mono); transition: color .2s; }
+  nav a:hover, nav a.active { color: var(--accent); text-decoration: none; }
   .progress {
     position: absolute; bottom: -1px; left: 0; height: 2px; width: 0;
     background: linear-gradient(90deg, var(--accent), var(--accent-2));
@@ -67,17 +89,23 @@
 
   /* Hero */
   #hero { min-height: 100vh; display: flex; align-items: center; padding-top: 80px; }
+  .hero-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 13px;
+    color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px;
+    background: rgba(255,255,255,.02);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: .45; } }
   .hero-name {
-    font-size: clamp(40px, 8vw, 84px); font-weight: 800; line-height: 1.05;
-    position: relative;
+    font-size: clamp(42px, 7.5vw, 86px); font-weight: 800; line-height: 1.02; margin-top: 22px; letter-spacing: -.02em;
   }
   .glitch { position: relative; display: inline-block; }
   .glitch::before, .glitch::after {
-    content: attr(data-text); position: absolute; left: 0; top: 0;
-    width: 100%; overflow: hidden;
+    content: attr(data-text); position: absolute; left: 0; top: 0; width: 100%; overflow: hidden;
   }
-  .glitch::before { color: var(--danger); opacity: 0; animation: glitch1 2.4s infinite linear; clip-path: inset(0 0 60% 0); }
-  .glitch::after { color: var(--accent-2); opacity: 0; animation: glitch2 3s infinite linear; clip-path: inset(50% 0 0 0); }
+  .glitch::before { color: var(--danger); opacity: 0; animation: glitch1 2.6s infinite linear; clip-path: inset(0 0 60% 0); }
+  .glitch::after { color: var(--accent-2); opacity: 0; animation: glitch2 3.2s infinite linear; clip-path: inset(50% 0 0 0); }
   @keyframes glitch1 {
     0%, 89%, 100% { transform: translate(0); opacity: 0; }
     90% { transform: translate(-5px, 1px); opacity: .8; }
@@ -90,68 +118,136 @@
     88% { transform: translate(-4px, -1px); opacity: .8; }
     90% { opacity: 0; }
   }
-  .role { font-family: var(--mono); font-size: clamp(16px, 2.4vw, 22px); color: var(--accent); margin: 20px 0; min-height: 1.6em; }
-  .cursor { display: inline-block; width: 10px; background: var(--accent); animation: blink 1s steps(1) infinite; }
+  .role { font-family: var(--mono); font-size: clamp(15px, 2.2vw, 20px); color: var(--accent); margin: 18px 0; min-height: 1.6em; }
+  .cursor { display: inline-block; width: 9px; height: 1em; vertical-align: -2px; background: var(--accent); animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
-  .hero-sub { max-width: 620px; color: var(--muted); font-size: 18px; }
+  .hero-sub { max-width: 600px; color: var(--muted); font-size: 17px; }
   .btns { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 32px; }
   .btn {
-    font-family: var(--mono); font-size: 14px; padding: 12px 22px;
-    border: 1px solid var(--accent); color: var(--accent);
-    border-radius: 4px; transition: all .25s; position: relative; overflow: hidden;
+    font-family: var(--mono); font-size: 14px; padding: 12px 22px; border-radius: 8px;
+    border: 1px solid var(--accent); color: var(--accent); display: inline-block;
+    transition: transform .2s, background .25s, color .25s, box-shadow .25s;
   }
-  .btn:hover { background: var(--accent); color: #001a0e; text-decoration: none; box-shadow: 0 0 24px rgba(0,255,157,.45); }
-  .btn.solid { background: var(--accent); color: #001a0e; }
-  .btn.solid:hover { background: transparent; color: var(--accent); }
-  .status {
-    display: inline-flex; align-items: center; gap: 8px; margin-top: 28px;
-    font-family: var(--mono); font-size: 13px; color: var(--muted);
+  .btn:hover { background: var(--accent); color: var(--ink); text-decoration: none; box-shadow: 0 0 26px rgba(34,211,238,.4); transform: translateY(-2px); }
+  .btn.solid { background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-color: transparent; color: var(--ink); font-weight: 700; }
+  .btn.solid:hover { background: linear-gradient(90deg, var(--accent-2), var(--accent)); color: var(--ink); }
+
+  /* Hero photo card */
+  .hero-card {
+    position: relative; justify-self: center; width: min(340px, 90%); aspect-ratio: 4 / 5;
+    border-radius: 18px; border: 1px solid var(--border); overflow: hidden;
+    background: var(--bg-2); box-shadow: 0 30px 80px rgba(0,0,0,.5);
   }
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite; }
-  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .5; } }
+  .hero-card img { width: 100%; height: 100%; object-fit: cover; object-position: center 25%; display: block; }
+  .hero-card::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, transparent 60%, rgba(7,11,22,.85));
+  }
+  .hero-card .tag {
+    position: absolute; left: 14px; bottom: 14px; z-index: 1; font-family: var(--mono); font-size: 12px; color: var(--text);
+    background: rgba(7,11,22,.7); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px;
+  }
+  .hero-card .scan {
+    position: absolute; left: 0; right: 0; height: 2px; top: 0; z-index: 1;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 0 14px var(--accent); animation: scan 3.5s ease-in-out infinite;
+  }
+  @keyframes scan { 0%,100% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 50% { top: 100%; } }
+
+  /* Stats strip */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid var(--border); border-radius: 14px; background: var(--panel); overflow: hidden;
+  }
+  .stat { padding: 26px 22px; text-align: center; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: 0; }
+  .stat b { display: block; font-size: clamp(30px, 4vw, 42px); font-weight: 800; color: var(--text); font-family: var(--mono); }
+  .stat span { font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+
+  /* Marquee */
+  .marquee {
+    overflow: hidden; white-space: nowrap; border-block: 1px solid var(--border);
+    padding: 16px 0; font-family: var(--mono); color: var(--muted); font-size: 14px;
+  }
+  .marquee-track { display: inline-block; animation: marquee 30s linear infinite; }
+  .marquee-track span { margin-right: 36px; }
+  .marquee-track span b { color: var(--accent-2); font-weight: 700; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
   /* About */
-  .about-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: start; }
+  .about-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 48px; align-items: start; }
   .about-grid p { color: var(--muted); margin-bottom: 16px; }
+  .principles { display: grid; gap: 14px; margin-top: 24px; }
+  .principle {
+    display: flex; gap: 14px; padding: 16px 18px; border-radius: 12px;
+    background: var(--panel); border: 1px solid var(--border);
+    transition: border-color .3s, transform .3s;
+  }
+  .principle:hover { border-color: var(--accent-2); transform: translateX(6px); }
+  .principle i { font-style: normal; font-family: var(--mono); color: var(--accent-2); font-weight: 700; }
+  .principle h4 { font-size: 16px; margin-bottom: 2px; }
+  .principle p { color: var(--muted); font-size: 14px; margin: 0; }
   .terminal {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    font-family: var(--mono); font-size: 14px; overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    font-family: var(--mono); font-size: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.4);
   }
   .term-bar { background: rgba(255,255,255,.04); padding: 10px 14px; display: flex; gap: 7px; }
   .term-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
-  .term-body { padding: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; min-height: 260px; }
+  .term-body { padding: 18px; line-height: 1.9; white-space: pre-wrap; min-height: 260px; }
   .term-body .p { color: var(--accent); }
   .term-body .c { color: var(--muted); }
 
-  /* Cards */
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
-  .card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    padding: 26px; position: relative; overflow: hidden;
-    transition: transform .35s, border-color .35s, box-shadow .35s;
-    display: flex; flex-direction: column;
+  /* Bento projects */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; background: none; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px; cursor: pointer; transition: all .2s;
   }
+  .chip:hover, .chip.on { border-color: var(--accent); color: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px; position: relative; overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .35s, border-color .35s, box-shadow .35s;
+  }
+  .card.featured { grid-column: span 2; background: linear-gradient(135deg, rgba(34,211,238,.09), rgba(167,139,250,.07)), var(--panel); }
   .card::before {
-    content: ""; position: absolute; inset: 0;
-    background: radial-gradient(400px circle at var(--mx,50%) var(--my,50%), rgba(0,255,157,.12), transparent 40%);
-    opacity: 0; transition: opacity .3s; pointer-events: none;
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(360px circle at var(--mx,50%) var(--my,50%), rgba(34,211,238,.14), transparent 45%);
+    opacity: 0; transition: opacity .3s;
   }
   .card:hover::before { opacity: 1; }
-  .card:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 16px 40px rgba(0,255,157,.12); }
-  .card h3 { font-size: 20px; margin-bottom: 6px; }
-  .card .tag { font-family: var(--mono); font-size: 12px; color: var(--accent-2); margin-bottom: 12px; }
+  .card:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 18px 44px rgba(34,211,238,.12); }
+  .card h3 { font-size: 19px; margin-bottom: 6px; }
+  .card .tag { font-family: var(--mono); font-size: 12px; color: var(--accent-2); margin-bottom: 10px; }
   .card p { color: var(--muted); font-size: 15px; flex: 1; }
-  .card ul { margin: 12px 0 16px 18px; color: var(--muted); font-size: 14px; }
-  .card .links { display: flex; gap: 16px; font-family: var(--mono); font-size: 13px; margin-top: 12px; }
-  .lang { display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--bg); background: var(--accent); padding: 2px 8px; border-radius: 3px; margin-left: 8px; vertical-align: middle; }
+  .card ul { margin: 12px 0 14px 18px; color: var(--muted); font-size: 14px; }
+  .card .links { display: flex; gap: 16px; font-family: var(--mono); font-size: 13px; margin-top: 10px; }
+  .lang {
+    display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--ink);
+    background: var(--accent); padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
+  }
+  .card.hide { display: none; }
+
+  /* Process */
+  .process { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 18px; }
+  .step {
+    position: relative; padding: 20px 18px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border);
+  }
+  .step .n { font-family: var(--mono); color: var(--accent-2); font-size: 13px; display: block; margin-bottom: 8px; }
+  .step h4 { font-size: 18px; margin-bottom: 6px; }
+  .step p { color: var(--muted); font-size: 14px; }
+  .step:not(:last-child)::after {
+    content: "→"; position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+    color: var(--accent); font-family: var(--mono); z-index: 1;
+  }
 
   /* Skills */
-  .skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; }
+  .skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px; }
   .skill-group { border-left: 2px solid var(--accent); padding-left: 18px; }
   .skill-group h4 { font-family: var(--mono); margin-bottom: 12px; color: var(--accent-2); }
-  .bar { margin-bottom: 12px; font-size: 14px; }
-  .bar-top { display: flex; justify-content: space-between; color: var(--muted); font-family: var(--mono); font-size: 12px; margin-bottom: 4px; }
+  .bar { margin-bottom: 14px; font-size: 14px; }
+  .bar-top { display: flex; justify-content: space-between; color: var(--muted); font-family: var(--mono); font-size: 12px; margin-bottom: 5px; }
   .bar-track { height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
   .bar-fill {
     height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2));
@@ -163,9 +259,9 @@
   .tl-item { position: relative; margin-bottom: 36px; }
   .tl-item::before {
     content: ""; position: absolute; left: -35px; top: 6px; width: 13px; height: 13px;
-    background: var(--bg); border: 2px solid var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent);
+    background: var(--bg); border: 2px solid var(--accent-2); border-radius: 50%; box-shadow: 0 0 12px var(--accent-2);
   }
-  .tl-item .when { font-family: var(--mono); font-size: 13px; color: var(--accent-2); }
+  .tl-item .when { font-family: var(--mono); font-size: 13px; color: var(--accent); }
   .tl-item h4 { font-size: 18px; margin: 4px 0; }
   .tl-item p { color: var(--muted); font-size: 15px; }
 
@@ -176,74 +272,27 @@
   footer { text-align: center; padding: 32px 0; color: var(--muted); font-family: var(--mono); font-size: 13px; border-top: 1px solid var(--border); }
 
   /* Reveal */
-  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; }
   .reveal.in { opacity: 1; transform: none; }
 
-  /* Loader (idea from Daniel Spatzek / Minh Pham: percent counter intro) */
-  #loader {
-    position: fixed; inset: 0; z-index: 100; background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono); font-size: clamp(48px, 10vw, 120px); color: var(--accent);
-    transition: opacity .6s ease, visibility .6s;
-  }
-  #loader.done { opacity: 0; visibility: hidden; }
-
-  /* Custom cursor glow */
-  #cursor {
-    position: fixed; width: 320px; height: 320px; margin: -160px 0 0 -160px;
-    border-radius: 50%; pointer-events: none; z-index: -1;
-    background: radial-gradient(circle, rgba(0,179,255,.13), transparent 60%);
-    transition: transform .15s ease-out;
-  }
-
-  /* Active nav link (idea from Brittany Chiang's sticky nav) */
-  nav a.active { color: var(--accent); }
-  nav a.active::after { content: " _"; color: var(--accent); }
-
-  /* Marquee ticker (idea from Daniel Spatzek's trendy marquee) */
-  .marquee {
-    overflow: hidden; white-space: nowrap; border-block: 1px solid var(--border);
-    padding: 16px 0; font-family: var(--mono); color: var(--muted); font-size: 15px;
-  }
-  .marquee-track { display: inline-block; animation: marquee 28s linear infinite; }
-  .marquee-track span { margin-right: 36px; }
-  .marquee-track span b { color: var(--accent); font-weight: 700; }
-  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-  /* Filter chips (idea from Daniel Spatzek's project tags) */
-  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
-  .chip {
-    font-family: var(--mono); font-size: 13px; background: none; color: var(--text);
-    border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px; cursor: pointer;
-    transition: all .2s;
-  }
-  .chip:hover, .chip.on { border-color: var(--accent); color: var(--accent); }
-  .card.hide { display: none; }
-
-  /* Process steps (idea from Daniel Spatzek's process section) */
-  .process { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; counter-reset: step; }
-  .step {
-    border-top: 2px solid var(--accent); padding-top: 16px;
-    counter-increment: step;
-  }
-  .step::before {
-    content: "0" counter(step); font-family: var(--mono); color: var(--accent-2); font-size: 13px; display: block; margin-bottom: 6px;
-  }
-  .step h4 { font-size: 18px; margin-bottom: 6px; }
-  .step p { color: var(--muted); font-size: 14px; }
-
-  /* Profile photo with a glowing ring */
-  .avatar {
-    width: 140px; height: 140px; border-radius: 50%; object-fit: cover; object-position: center 30%;
-    border: 2px solid var(--accent); box-shadow: 0 0 0 6px rgba(0,255,157,.08), 0 0 28px rgba(0,255,157,.25);
-    margin-bottom: 24px; display: block;
-  }
-
   /* Mobile */
+  @media (max-width: 900px) {
+    .hero-grid, .about-grid { grid-template-columns: 1fr; }
+    .hero-card { order: -1; width: min(280px, 70%); }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .card.featured { grid-column: span 2; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(2) { border-right: 0; }
+    .stat:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+    .step:not(:last-child)::after { display: none; }
+  }
   @media (max-width: 800px) {
-    .about-grid { grid-template-columns: 1fr; }
     nav ul { display: none; }
     section { padding: 72px 0; }
+  }
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
+    .card.featured { grid-column: auto; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -254,11 +303,11 @@
 <body>
 <div id="loader" aria-hidden="true"><span id="loader-num">000</span></div>
 <div id="cursor" aria-hidden="true"></div>
-<canvas id="matrix" aria-hidden="true"></canvas>
+<canvas id="net" aria-hidden="true"></canvas>
 
 <nav>
   <div class="container">
-    <span class="logo">&gt; rabbi_aman_</span>
+    <span class="logo"><b>&gt;</b> rabbi_aman</span>
     <ul>
       <li><a href="#about">about</a></li>
       <li><a href="#projects">projects</a></li>
@@ -272,22 +321,37 @@
 </nav>
 
 <header id="hero">
-  <div class="container">
-    <p class="label">// cybersecurity portfolio</p>
-    <h1 class="hero-name">
-      <span class="glitch" data-text="Rabbi Muhammad Aman">Rabbi Muhammad Aman</span>
-    </h1>
-    <p class="role"><span id="typed"></span><span class="cursor">&nbsp;</span></p>
-    <p class="hero-sub">Cybersecurity student at Seneca Polytechnic (Toronto). I build and break things so they stay secure: network defense, cloud identity, web application security and AI-assisted security automation.</p>
-    <div class="btns">
-      <a class="btn solid" href="#projects">./view_projects</a>
-      <a class="btn" href="#contact">./contact_me</a>
+  <div class="container hero-grid">
+    <div>
+      <span class="pill"><span class="dot"></span> Open to co-op / internship</span>
+      <h1 class="hero-name">
+        <span class="glitch" data-text="Rabbi Muhammad Aman">Rabbi Muhammad Aman</span>
+      </h1>
+      <p class="role"><span id="typed"></span><span class="cursor"></span></p>
+      <p class="hero-sub">Cybersecurity student at Seneca Polytechnic in Toronto. I build and break systems so they stay secure: network defense, cloud identity, web application security and security automation.</p>
+      <div class="btns">
+        <a class="btn solid" href="#projects">./view_projects</a>
+        <a class="btn" href="#contact">./contact_me</a>
+      </div>
     </div>
-    <div class="status"><span class="dot"></span> Open to co-op / internship opportunities</div>
+    <div class="hero-card" aria-label="Photo of Rabbi Muhammad Aman">
+      <img src="profile.jpeg" alt="Rabbi Muhammad Aman" width="340" height="425">
+      <span class="scan"></span>
+      <span class="tag">// seneca · toronto</span>
+    </div>
   </div>
 </header>
 
-<div class="marquee" aria-hidden="true">
+<div class="container">
+  <div class="stats reveal">
+    <div class="stat"><b data-count="8">0</b><span>public projects</span></div>
+    <div class="stat"><b data-count="4">0</b><span>security domains</span></div>
+    <div class="stat"><b data-count="76">0</b><span>% token cut in agent</span></div>
+    <div class="stat"><b data-count="100">0</b><span>% labs documented</span></div>
+  </div>
+</div>
+
+<div class="marquee" style="margin-top:72px" aria-hidden="true">
   <div class="marquee-track">
     <span><b>NETWORK DEFENSE</b> ///</span><span><b>IDENTITY &amp; ACCESS</b> ///</span><span><b>WEB APP SECURITY</b> ///</span><span><b>APPLIED CRYPTO</b> ///</span><span><b>SECURITY AUTOMATION</b> ///</span><span><b>THREAT ANALYSIS</b> ///</span>
     <span><b>NETWORK DEFENSE</b> ///</span><span><b>IDENTITY &amp; ACCESS</b> ///</span><span><b>WEB APP SECURITY</b> ///</span><span><b>APPLIED CRYPTO</b> ///</span><span><b>SECURITY AUTOMATION</b> ///</span><span><b>THREAT ANALYSIS</b> ///</span>
@@ -297,15 +361,18 @@
 <section id="about">
   <div class="container about-grid">
     <div class="reveal">
-      <img class="avatar" src="profile.jpeg" alt="Rabbi Muhammad Aman" width="140" height="140">
       <p class="label">01 // about</p>
       <h2>Security mindset, <span>hands-on</span> practice</h2>
-      <p>I study cybersecurity with a focus on defending real networks and cloud identity systems. My labs are built in isolated environments, and each one comes with a written report and evidence.</p>
-      <p>I am especially interested in how large language model agents can speed up log analysis and security operations, and in doing that safely with permission gates and clear limits.</p>
-      <p>Outside of coursework I write Python, PowerShell, Bash and JavaScript, and I like automating repetitive hardening and compliance work.</p>
+      <p>I study cybersecurity with a focus on defending real networks and cloud identity systems. Every lab is built in an isolated environment and documented with a written report and evidence.</p>
+      <p>I am especially interested in how LLM agents can speed up log analysis and security operations, and how to do that safely with permission gates and clear limits.</p>
+      <div class="principles">
+        <div class="principle"><i>01</i><div><h4>Least privilege</h4><p>Give every user, app and agent only the access it needs.</p></div></div>
+        <div class="principle"><i>02</i><div><h4>Defense in depth</h4><p>Layer network, identity and application controls so one failure is not a breach.</p></div></div>
+        <div class="principle"><i>03</i><div><h4>Verify, then trust</h4><p>Zero Trust thinking: check identity and device on every request.</p></div></div>
+      </div>
     </div>
     <div class="terminal reveal">
-      <div class="term-bar"><i style="background:#ff5f56"></i><i style="background:#ffbd2e"></i><i style="background:#27c93f"></i></div>
+      <div class="term-bar"><i style="background:#fb7185"></i><i style="background:#fbbf24"></i><i style="background:#34d399"></i></div>
       <div class="term-body" id="term"></div>
     </div>
   </div>
@@ -324,45 +391,45 @@
       <button class="chip" data-filter="automation">automation</button>
     </div>
     <div class="grid">
-      <article class="card reveal" data-cat="network automation">
-        <p class="tag">AI-ASSISTED LOG ANALYSIS</p>
+      <article class="card featured reveal" data-cat="network automation">
+        <p class="tag">AI-ASSISTED LOG ANALYSIS · FEATURED</p>
         <h3>Network Attack Analysis<span class="lang">Python</span></h3>
-        <p>A hand-built Python tool-calling agent with permission gates for security log analysis. Coordinates Claude and Gemini agents in parallel.</p>
-        <ul><li>Cut LLM token use by 76% with context management</li></ul>
+        <p>A hand-built Python tool-calling agent with permission gates for security log analysis. It coordinates Claude and Gemini agents in parallel.</p>
+        <ul><li>Cut LLM token use by 76% with context management</li><li>Permission gates before any tool runs</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/srt521-network-attack-analysis">source →</a></div>
       </article>
       <article class="card reveal" data-cat="network">
         <p class="tag">NETWORK SECURITY</p>
         <h3>Enterprise Network Security<span class="lang">Python</span></h3>
         <p>Enterprise network design and hardening (group project) with threat and risk analysis.</p>
-        <ul><li>VLAN security zones, OSPF with MD5 authentication</li><li>nftables default-deny firewall, AD DS, DNS split-horizon</li><li>TVRA risk assessment and OSINT</li></ul>
+        <ul><li>VLAN zones, OSPF with MD5</li><li>nftables default-deny, AD DS, DNS split-horizon</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/spr500-security-project">source →</a></div>
       </article>
       <article class="card reveal" data-cat="identity">
         <p class="tag">IDENTITY &amp; ACCESS MANAGEMENT</p>
         <h3>Entra ID &amp; Azure Labs</h3>
         <p>Identity security labs in Microsoft Entra ID and Azure.</p>
-        <ul><li>Conditional Access and MFA</li><li>B2B federation and RBAC</li><li>Key Vault, managed identities, Defender for Cloud Apps</li></ul>
+        <ul><li>Conditional Access and MFA</li><li>B2B federation and RBAC</li><li>Key Vault, managed identities</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/iam500-identity-access-management">source →</a></div>
       </article>
       <article class="card reveal" data-cat="appsec">
         <p class="tag">WEB APPLICATION SECURITY</p>
         <h3>Web App Security Labs<span class="lang">JavaScript</span></h3>
-        <p>Hands-on front-end security labs covering XSS and client-side validation bypass, with accessible responsive design.</p>
+        <p>Front-end security labs covering XSS and client-side validation bypass, with accessible responsive design.</p>
         <div class="links"><a href="https://github.com/rabbiaman03/was500-web-app-security">source →</a><a href="https://rabbiaman03.github.io/was500-web-app-security/">live demo →</a></div>
       </article>
       <article class="card reveal" data-cat="crypto">
         <p class="tag">APPLIED CRYPTOGRAPHY</p>
         <h3>Applied Cryptography<span class="lang">Python</span></h3>
-        <p>Cryptography experiments and demos, from classical key exchange to post-quantum signatures.</p>
-        <ul><li>Tor key exchange analysis and ECC benchmarks</li><li>RSA and Ed25519 in Python</li><li>Interactive Schnorr zero-knowledge proof, SPHINCS+ signatures</li></ul>
+        <p>Cryptography experiments, from classical key exchange to post-quantum signatures.</p>
+        <ul><li>Tor key exchange and ECC benchmarks</li><li>Schnorr zero-knowledge proof, SPHINCS+</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/spr200-applied-cryptography">source →</a></div>
       </article>
       <article class="card reveal" data-cat="network">
         <p class="tag">DEFENSIVE SECURITY</p>
         <h3>Cyber Defense Labs<span class="lang">Journals</span></h3>
-        <p>Defensive security labs and learning journals on attacks, kill chains and Zero Trust.</p>
-        <ul><li>OpenVAS vulnerability scanning</li><li>PCAP analysis with tcpdump and Wireshark</li><li>BloodHound AD attack paths</li></ul>
+        <p>Defensive labs and journals on attacks, kill chains and Zero Trust.</p>
+        <ul><li>OpenVAS scanning</li><li>PCAP analysis with Wireshark</li><li>BloodHound attack paths</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/cyber-defense-labs-journals">source →</a></div>
       </article>
       <article class="card reveal" data-cat="automation">
@@ -374,8 +441,8 @@
       <article class="card reveal" data-cat="appsec automation">
         <p class="tag">DATA SECURITY</p>
         <h3>Databases, Security &amp; Analytics<span class="lang">Python</span></h3>
-        <p>Database security and analytics work across SQL, NoSQL and logging stacks.</p>
-        <ul><li>MySQL backup and binlog point-in-time recovery</li><li>MongoDB, ELK centralized logging, spaCy NLP</li></ul>
+        <p>Database security across SQL, NoSQL and logging stacks.</p>
+        <ul><li>MySQL binlog point-in-time recovery</li><li>MongoDB, ELK logging, spaCy NLP</li></ul>
         <div class="links"><a href="https://github.com/rabbiaman03/ris330-database-security-analytics">source →</a></div>
       </article>
     </div>
@@ -387,12 +454,12 @@
     <p class="label reveal">03 // process</p>
     <h2 class="reveal">How I <span>approach</span> a problem</h2>
     <div class="process">
-      <div class="step reveal"><h4>Recon</h4><p>Map assets, data flows and the attack surface before touching anything.</p></div>
-      <div class="step reveal"><h4>Analyze</h4><p>Scan, capture and review logs to find real risk, not noise.</p></div>
-      <div class="step reveal"><h4>Build</h4><p>Design controls and automation with least privilege in mind.</p></div>
-      <div class="step reveal"><h4>Test</h4><p>Validate each control in an isolated lab and confirm it works.</p></div>
-      <div class="step reveal"><h4>Harden</h4><p>Apply baselines such as CIS and enforce them repeatably.</p></div>
-      <div class="step reveal"><h4>Report</h4><p>Document findings with evidence and clear, prioritized fixes.</p></div>
+      <div class="step reveal"><span class="n">01</span><h4>Recon</h4><p>Map assets, data flows and the attack surface first.</p></div>
+      <div class="step reveal"><span class="n">02</span><h4>Analyze</h4><p>Scan, capture and review logs to find real risk, not noise.</p></div>
+      <div class="step reveal"><span class="n">03</span><h4>Build</h4><p>Design controls and automation with least privilege in mind.</p></div>
+      <div class="step reveal"><span class="n">04</span><h4>Test</h4><p>Validate each control in an isolated lab.</p></div>
+      <div class="step reveal"><span class="n">05</span><h4>Harden</h4><p>Apply baselines such as CIS and enforce them repeatably.</p></div>
+      <div class="step reveal"><span class="n">06</span><h4>Report</h4><p>Document findings with evidence and prioritized fixes.</p></div>
     </div>
   </div>
 </section>
@@ -470,33 +537,74 @@
 
 <script>
 (() => {
-  // Matrix rain background
-  const canvas = document.getElementById('matrix');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Intro loader with percent counter
+  const loader = document.getElementById('loader');
+  const loaderNum = document.getElementById('loader-num');
+  let pct = 0;
+  const loadTick = setInterval(() => {
+    pct = Math.min(100, pct + Math.ceil(Math.random() * 9));
+    loaderNum.textContent = String(pct).padStart(3, '0');
+    if (pct >= 100) {
+      clearInterval(loadTick);
+      setTimeout(() => loader.classList.add('done'), 250);
+    }
+  }, 35);
+
+  // Network-node background: drifting nodes linked by lines, reacting to the mouse
+  const canvas = document.getElementById('net');
   const ctx = canvas.getContext('2d');
-  const chars = '01<>{}[]$#@%&ABCDEF';
-  let cols, drops;
+  let nodes = [];
+  const mouse = { x: -999, y: -999 };
   const size = () => {
     canvas.width = innerWidth; canvas.height = innerHeight;
-    cols = Math.floor(canvas.width / 16);
-    drops = Array.from({ length: cols }, () => Math.random() * -50);
+    const count = Math.min(70, Math.floor(innerWidth * innerHeight / 22000));
+    nodes = Array.from({ length: count }, () => ({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3
+    }));
   };
   size();
   addEventListener('resize', size);
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const drawMatrix = () => {
-    ctx.fillStyle = 'rgba(5,8,13,0.12)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#00ff9d';
-    ctx.font = '14px JetBrains Mono, monospace';
-    for (let i = 0; i < cols; i++) {
-      const ch = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(ch, i * 16, drops[i] * 16);
-      if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
+  addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  const linkDist = 150;
+  const drawNet = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const n of nodes) {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
     }
-    requestAnimationFrame(drawMatrix);
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < linkDist) {
+          ctx.strokeStyle = `rgba(34,211,238,${(1 - d / linkDist) * .22})`;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+      const md = Math.hypot(a.x - mouse.x, a.y - mouse.y);
+      if (md < 180) {
+        ctx.strokeStyle = `rgba(167,139,250,${(1 - md / 180) * .45})`;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(167,139,250,.7)';
+      ctx.beginPath(); ctx.arc(a.x, a.y, 1.6, 0, Math.PI * 2); ctx.fill();
+    }
+    requestAnimationFrame(drawNet);
   };
-  if (!reduce) drawMatrix();
+  if (!reduce) drawNet();
+
+  // Cursor glow
+  const cursor = document.getElementById('cursor');
+  if (matchMedia('(pointer: fine)').matches && !reduce) {
+    addEventListener('mousemove', e => { cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`; }, { passive: true });
+  } else {
+    cursor.style.display = 'none';
+  }
 
   // Typing effect
   const phrases = ['Network Security Student', 'Identity & Cloud Defender', 'Web App Security Learner', 'Security Automation Builder'];
@@ -512,7 +620,7 @@
   };
   type();
 
-  // Terminal about-me animation
+  // Terminal intro
   const lines = [
     ['p', '$ whoami'], ['', 'rabbi-muhammad-aman'],
     ['p', '$ cat focus.txt'], ['', 'network defense | cloud identity | appsec'],
@@ -543,6 +651,25 @@
   }, { threshold: 0.4 });
   termObs.observe(term);
 
+  // Count-up stats
+  const countObs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      const end = Number(el.dataset.count);
+      const start = performance.now();
+      const dur = 1400;
+      const tick = now => {
+        const t = Math.min(1, (now - start) / dur);
+        el.textContent = Math.round(end * (1 - Math.pow(1 - t, 3)));
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      countObs.unobserve(el);
+    });
+  }, { threshold: .6 });
+  document.querySelectorAll('[data-count]').forEach(el => countObs.observe(el));
+
   // Reveal on scroll + skill bars
   const revealObs = new IntersectionObserver(entries => {
     entries.forEach(en => {
@@ -556,46 +683,7 @@
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-  // Scroll progress bar
-  const bar = document.getElementById('progress');
-  addEventListener('scroll', () => {
-    const h = document.documentElement;
-    bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 + '%';
-  }, { passive: true });
-
-  // Cursor-follow glow on cards
-  document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
-    });
-  });
-
-  // Intro loader with percent counter
-  const loader = document.getElementById('loader');
-  const loaderNum = document.getElementById('loader-num');
-  let pct = 0;
-  const loadTick = setInterval(() => {
-    pct = Math.min(100, pct + Math.ceil(Math.random() * 9));
-    loaderNum.textContent = String(pct).padStart(3, '0');
-    if (pct >= 100) {
-      clearInterval(loadTick);
-      setTimeout(() => loader.classList.add('done'), 250);
-    }
-  }, 35);
-
-  // Cursor glow follows the mouse (desktop only)
-  const cursor = document.getElementById('cursor');
-  if (matchMedia('(pointer: fine)').matches && !reduce) {
-    addEventListener('mousemove', e => {
-      cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-    }, { passive: true });
-  } else {
-    cursor.style.display = 'none';
-  }
-
-  // Active nav link while scrolling
+  // Active nav link
   const navLinks = document.querySelectorAll('nav ul a');
   const sectionObs = new IntersectionObserver(entries => {
     entries.forEach(en => {
@@ -604,6 +692,22 @@
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
   document.querySelectorAll('section[id]').forEach(s => sectionObs.observe(s));
+
+  // Scroll progress
+  const bar = document.getElementById('progress');
+  addEventListener('scroll', () => {
+    const h = document.documentElement;
+    bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 + '%';
+  }, { passive: true });
+
+  // Card glow follows cursor
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
 
   // Project filter chips
   const chips = document.querySelectorAll('.chip');
@@ -619,15 +723,14 @@
     });
   });
 
-  // In-page links (nav, buttons): scroll in JS so they work even where hash navigation is blocked
+  // In-page links scroll in JS (works even where hash navigation is blocked)
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
-      const id = link.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
+      const target = document.getElementById(link.getAttribute('href').slice(1));
       if (!target) return;
       e.preventDefault();
-      target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-      history.replaceState(null, '', '#' + id);
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      history.replaceState(null, '', link.getAttribute('href'));
     });
   });
 
