@@ -232,6 +232,13 @@
   .step h4 { font-size: 18px; margin-bottom: 6px; }
   .step p { color: var(--muted); font-size: 14px; }
 
+  /* Profile photo with a glowing ring */
+  .avatar {
+    width: 140px; height: 140px; border-radius: 50%; object-fit: cover; object-position: center 30%;
+    border: 2px solid var(--accent); box-shadow: 0 0 0 6px rgba(0,255,157,.08), 0 0 28px rgba(0,255,157,.25);
+    margin-bottom: 24px; display: block;
+  }
+
   /* Mobile */
   @media (max-width: 800px) {
     .about-grid { grid-template-columns: 1fr; }
@@ -290,6 +297,7 @@
 <section id="about">
   <div class="container about-grid">
     <div class="reveal">
+      <img class="avatar" src="profile.jpeg" alt="Rabbi Muhammad Aman" width="140" height="140">
       <p class="label">01 // about</p>
       <h2>Security mindset, <span>hands-on</span> practice</h2>
       <p>I study cybersecurity with a focus on defending real networks and cloud identity systems. My labs are built in isolated environments, and each one comes with a written report and evidence.</p>
