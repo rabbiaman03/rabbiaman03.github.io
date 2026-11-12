@@ -558,24 +558,24 @@ main, header, footer { position: relative; z-index: 2; }
             <span class="label">2026 — Now</span>
             <div>
               <h4>Enterprise Network Security · SPR500 <span class="arr">↗</span></h4>
-              <p>Group project: segmented a virtual enterprise into VLAN zones with OSPF, stateful nftables firewalls and Ansible-deployed host firewalls, then assessed it with a TVRA and passive OSINT.</p>
-              <div class="chips"><span class="chip">nftables</span><span class="chip">OSPF</span><span class="chip">Ansible</span><span class="chip">TVRA</span></div>
+              <p>Group project: segmented a virtual enterprise into VLAN zones with OSPF, stateful nftables firewalls and Ansible-deployed host firewalls, then assessed it with a TVRA and passive OSINT. Added a DMZ behind a ModSecurity WAF and Suricata IDS/IPS, and proved 10 critical web vulnerabilities.</p>
+              <div class="chips"><span class="chip">nftables</span><span class="chip">OSPF</span><span class="chip">Ansible</span><span class="chip">TVRA</span><span class="chip">WAF</span><span class="chip">Suricata</span></div>
             </div>
           </li>
           <li class="rv" data-project="iam500" tabindex="0" role="link" aria-label="Open Identity and Access Management project">
             <span class="label">2026 — Now</span>
             <div>
               <h4>Identity &amp; Access Management · IAM500 <span class="arr">↗</span></h4>
-              <p>Ran Microsoft Entra ID end to end: Conditional Access and MFA, B2B federation, RBAC, Key Vault, access reviews and just-in-time admin roles with PIM.</p>
-              <div class="chips"><span class="chip">Entra ID</span><span class="chip">Azure</span><span class="chip">MFA</span><span class="chip">PIM</span></div>
+              <p>Ran Microsoft Entra ID end to end: Conditional Access and MFA, B2B federation, RBAC, Key Vault, access reviews and just-in-time admin roles with PIM. Traced the OAuth 2.0 and OpenID Connect flow by hand and decoded every token claim.</p>
+              <div class="chips"><span class="chip">Entra ID</span><span class="chip">Azure</span><span class="chip">MFA</span><span class="chip">PIM</span><span class="chip">OAuth 2.0</span></div>
             </div>
           </li>
           <li class="rv" data-project="was500" tabindex="0" role="link" aria-label="Open Web Application Security project">
             <span class="label">2026 — Now</span>
             <div>
               <h4>Web Application Security · WAS500 <span class="arr">↗</span></h4>
-              <p>Built a site lab by lab up to a Node.js server, showed XSS through innerHTML, and bypassed my own client-side validation to prove the server must validate.</p>
-              <div class="chips"><span class="chip">JavaScript</span><span class="chip">Node.js</span><span class="chip">XSS</span><span class="chip">Validation</span></div>
+              <p>Built a site lab by lab up to a Node.js server, showed XSS through innerHTML, and bypassed my own client-side validation to prove the server must validate. Then rebuilt it as an Express REST API with security middleware and rate limiting.</p>
+              <div class="chips"><span class="chip">JavaScript</span><span class="chip">Node.js</span><span class="chip">XSS</span><span class="chip">Validation</span><span class="chip">Express</span></div>
             </div>
           </li>
           <li class="rv" data-project="spr200" tabindex="0" role="link" aria-label="Open Applied Cryptography project">
@@ -701,22 +701,22 @@ main, header, footer { position: relative; z-index: 2; }
     { id: 'spr500', name: 'Enterprise Network Security', course: 'SPR500 · Group 6', year: '2026', color: '#1f6f54',
       desc: 'Designed, segmented and hardened a virtual enterprise network, with a TVRA and OSINT.',
       lede: 'A flat network rebuilt into VLAN security zones behind stateful firewalls, deployed with automation and assessed for risk.',
-      points: ['Five VLAN zones on Open vSwitch, OSPF with MD5 authentication against rogue routers', 'Stateful nftables Core: conntrack, verdict maps, Layer-7 /admin blocking, SYN-flood meter', 'Default-deny host firewalls on every machine, deployed by Ansible; TVRA and passive OSINT'],
-      chips: ['nftables', 'OSPF', 'VLANs', 'Ansible', 'AD DS', 'TVRA'],
+      points: ['Five VLAN zones on Open vSwitch, OSPF with MD5 authentication against rogue routers', 'Stateful nftables Core: conntrack, verdict maps, Layer-7 /admin blocking, SYN-flood meter', 'Default-deny host firewalls on every machine, deployed by Ansible; TVRA and passive OSINT', 'DMZ where web traffic terminates at a ModSecurity WAF (OWASP CRS) and a Suricata IDS/IPS; 10 critical vulnerabilities in DVWA and Juice Shop proven, then blocked and detected'],
+      chips: ['nftables', 'OSPF', 'VLANs', 'Ansible', 'AD DS', 'TVRA', 'WAF', 'Suricata'],
       art: 'table inet filter {\n  chain forward { policy drop;\n    ct state established,related accept\n    ct state new tcp flags != syn drop\n    iifname . oifname vmap @zones\n  }\n}',
       links: [{ t: 'Open on GitHub', u: GH + 'spr500-security-project' }] },
     { id: 'iam500', name: 'Identity & Access', course: 'IAM500', year: '2026', color: '#2b5fa8',
       desc: 'Microsoft Entra ID labs: MFA, Conditional Access, RBAC, Key Vault and PIM.',
       lede: 'The full identity lifecycle in a Microsoft cloud tenant, from provisioning to just-in-time admin access.',
-      points: ['Conditional Access with MFA and Google federated as a B2B identity provider', 'Azure RBAC, managed identities with Key Vault, Defender for Cloud Apps', 'Entitlement catalogs, access reviews and PIM roles that need MFA and a justification'],
-      chips: ['Entra ID', 'Azure', 'Conditional Access', 'PIM', 'OAuth 2.0'],
+      points: ['Conditional Access with MFA and Google federated as a B2B identity provider', 'Azure RBAC, managed identities with Key Vault, Defender for Cloud Apps', 'Entitlement catalogs, access reviews and PIM roles that need MFA and a justification', 'OAuth 2.0 Authorization Code flow by hand in Postman, every JWT claim decoded, Graph calls with valid and invalid Bearer tokens'],
+      chips: ['Entra ID', 'Azure', 'Conditional Access', 'PIM', 'OAuth 2.0', 'OIDC', 'JWT'],
       art: 'PIM › Compliance Administrator\n  assignment    eligible\n  activation    MFA + justification\n  max duration  8 h\n  status        ✓ activated (2 h)',
       links: [{ t: 'Open on GitHub', u: GH + 'iam500-identity-access-management' }] },
     { id: 'was500', name: 'Web App Security', course: 'WAS500', year: '2026', color: '#b0452a',
-      desc: 'Six labs from HTML to a Node server, each ending in a security lesson. Live demos.',
+      desc: 'Seven labs from HTML to an Express API, each ending in a security lesson. Live demos.',
       lede: 'Building the Cipher Legends site lab by lab, then attacking my own validation to prove where security has to live.',
-      points: ['Showed script injection through innerHTML and fixed it with textContent', 'Bypassed HTML5 validation in DevTools to show the client can never be trusted', 'Wrote a Node.js server from scratch that rejects tampered input with 400'],
-      chips: ['JavaScript', 'Node.js', 'XSS', 'Validation', 'Accessibility'],
+      points: ['Showed script injection through innerHTML and fixed it with textContent', 'Bypassed HTML5 validation in DevTools to show the client can never be trusted', 'Wrote a Node.js server from scratch that rejects tampered input with 400', 'Rebuilt it as an Express REST API with helmet, CORS, rate limiting (429) and validation that rejects unexpected fields'],
+      chips: ['JavaScript', 'Node.js', 'XSS', 'Validation', 'Accessibility', 'Express', 'REST API'],
       art: "el.innerHTML = '<img src=x onerror=…>'\n→ script executed            ✗\nel.textContent = payload\n→ rendered as text           ✓\n\nPOST /api/join  →  400 rejected",
       links: [{ t: 'Open on GitHub', u: GH + 'was500-web-app-security' }, { t: 'Live demos', u: 'https://rabbiaman03.github.io/was500-web-app-security/' }] },
     { id: 'cipher', name: 'Cipher Machines', course: 'WAS500 · Assignment 1', year: '2026', color: '#8a6a1f',
@@ -958,7 +958,7 @@ main, header, footer { position: relative; z-index: 2; }
   var cmds = {
     help: '<span class="y">available commands</span>\n  whoami    who is this\n  skills    what I work with\n  projects  things I built\n  contact   how to reach me\n  sudo      try it\n  clear     wipe the screen',
     whoami: 'rabbi muhammad aman — cybersecurity student @ <span class="p">seneca polytechnic</span>, toronto.\nfocus: network security, cloud identity, appsec. <span class="g">status: open to co-op</span>',
-    skills: '<span class="d">security</span>  nftables · wireshark · tcpdump · openvas · bloodhound · kali\n<span class="d">identity</span>  entra id · conditional access · azure rbac · pim · key vault\n<span class="d">code</span>      python · bash · powershell · javascript · sql\n<span class="d">systems</span>   linux · windows server/ad · vmware · ansible · docker · git',
+    skills: '<span class="d">security</span>  nftables · wireshark · tcpdump · openvas · bloodhound · kali · suricata · modsecurity\n<span class="d">identity</span>  entra id · conditional access · azure rbac · pim · key vault · oauth 2.0/oidc\n<span class="d">code</span>      python · bash · powershell · javascript · sql · express\n<span class="d">systems</span>   linux · windows server/ad · vmware · ansible · docker · git',
     projects: PROJECTS.map(function (p, i) {
       var n = p.name.toLowerCase(); return String(i + 1).padStart(2, '0') + ' <span class="p">' + n + '</span>' + ' '.repeat(Math.max(1, 28 - n.length)) + p.course.toLowerCase();
     }).join('\n') + '\n<span class="d">→ scroll up to "selected work" and click one to open it</span>',
